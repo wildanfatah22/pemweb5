@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title> Game dengan javascript dan HTML </title>
+    <!-- Menambahkan style pada canvas menggunakan CSS Style-->
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: url('img/bg.jpg');
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Membuat canvas dengan ukuran seperti di bawah serta membuat id myCanvas -->
+    <canvas id="myCanvas" width="500" height="350"></canvas>
+    <!-- JavaScript -->
+    <script>
+        //Memilih elemen HTML dengan id myCanvas yang telah dibuat di atas
+        var canvas = document.getElementById('myCanvas');
+        //Membuat objek dari canvas yang dapat dimanfaatkan untuk menggambar atau diisi hal-hal lain
+        var context = canvas.getContext('2d');
+
+        //deklarasi variabel birdd untuk ikon karakter
+        var birdd = new Image();
+        birdd.src = ("img/bird.png")
+
+        //deklarasi variabel speed
+        var speed = 10;
+        //memberikan nilai gamespeed = 100
+        gameSpeed = 100;
+
+        //deklarasi variabel objek bird serta pengaturan posisi
+        var bird = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: 0,
+            vy: 1
+        };
+
+        //deklarasi variable pip
+        var pip = [];
+        //deklarasi variabel pipe untuk ikon rintangan
+        var pipe = new Image();
+        pipe.src = ("img/pipe.png")
+
+        //deklarasi variabel pipe2 untuk ikon rintangan
+        var pipe2 = new Image();
+        pipe2.src = ("img/pipe2.png")
+            //deklarasi serta set nilai gravitasi = 0.2
+        var gravity = 0.2;
+        //deklarasi variabel pantulan objek
+        var bounce = 4;
+        //deklarasi variabel jarak objek
+        var distance = 100;
+        //deklarasi variabel posisi objek
+        var dir = 'left';
+
+        // fungsi onkeydown untuk mengeksekusi script ketika user menekan tombol yg sudah ditentukan
+        document.onkeydown = function(e) {
+            if (!e) {
+                e = window.e;
+            }
+            var code = e.keyCode;
+            if (e.charCode && codee == 0) {
+                code = e.charCode;
+            }
+            //switch case untuk pengecekan nilai
+            switch (code) {
+                case 37:
+                    if (dir != 'right')
+                        dir = 'left';
+                    break;
+                case 38:
+                    if (dir != 'down')
+                        dir = 'up';
+                    break;
+                case 39:
+                    if (dir != 'left')
+                        dir = 'right';
+                    break;
+                case 40:
+                    if (dir != 'up')
+                        dir = 'down';
+                    break;
+            }
+
+
+        }
+
+        //deklarasi variabel b
+        var b = 0.8;
+
+        // function uuntuk membuat bird
+        function makeBird() {
+            context.beginPath(); //memulai path
+            context.drawImage(birdd, bird.x, bird.y, 30, 30); //membuat ikon serta ukuran bird
+            context.closePath(); //mengembalikan ke nilai awal
+            bird.y += bird.vy; //
+            bird.vy += gravity;
+            if (dir == 'up') {
+                bird.vy = -bounce;
+                dir = '';
+            }
+
+
+        }
+
+        // function untuk membuat pipa sebagai obstacle/rintangan
+        function makePip() {
+            for (p of pip) {
+                context.beginPath(); //memulai path
+                context.drawImage(pipe2, p.top.x, p.top.y, p.top.width = 30, p.top.height); //mengatur ukuran pipa
+                context.closePath(); //mengembalikan pada titik awal
+
+                //jarak antar pipa
+                p.bottom.y = p.top.height + distance;
+                p.bottom.height = (canvas.height - p.bottom.y);
+
+                context.beginPath(); //memulai path
+                context.drawImage(pipe, p.bottom.x, p.bottom.y, p.bottom.width = 30, p.bottom.height) //mengatur ukuran pipa
+                context.closePath(); //mengembalikan pada titik awal
+
+                p.bottom.x -= 1;
+                p.top.x -= 1;
+
+                //jika pipa bagian atas bernilai seperti kondisi dibawah, maka array paling awal akan dihapus dengan shift
+                if (p.top.x < -10) {
+                    pip.shift();
+                }
+
+                //digunakan fungsi collision untuk interaksi antar objek
+                if (isCollideB(bird, p.bottom) || isCollideT(bird, p.top) || bird.y + 10 >= canvas.height) { //jika objek collision dengan pip bagian atas ataupun bawah, maka akan muncul alert window tampilan score
+                    alert('Your score : ' + score);
+                    window.location.reload();
+                }
+
+                //pengaturan score didasarkan jarak objek bird
+                if (score % 10 == 0) {
+                    console.log(distance);
+                    score += 1;
+                    distance -= 5;
+                }
+            }
+        }
+
+        //mengatur pengembalian nilai collision objek bird ke pipa
+        function isCollideB(b, p) {
+            return (
+                (b.x + 10 > p.x) &&
+                (b.x < p.x + 10) &&
+                (b.y > p.y || b.y + 10 > p.y)
+            );
+        }
+
+        //pengaturan pengembalian nilai collision pipa ke objek bird
+        function isCollideT(b, p) {
+            return (
+                (b.x + 10 > p.x) &&
+                (b.x < p.x + 10) &&
+                (b.y < p.y + p.height)
+            );
+        }
+
+        //penyediaan fungsi matematik
+        function rnd(min, max) {
+            var r = Math.round(Math.random() * (max - min) + min);
+            return (r - r % speed);
+        }
+
+        var score = 0;
+        var frame = 0;
+        (function loop() {
+            requestAnimationFrame(function() {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                if (frame % gameSpeed == 0) {
+                    pip.push({
+                        //pengaturan pipa bagian atas
+                        top: {
+                            x: canvas.width,
+                            y: 0,
+                            height: rnd(70, 140),
+                            width: 10,
+                        },
+                        //pengaturan pipa bagian bawah
+                        bottom: {
+                            x: canvas.width,
+                            y: 0,
+                            height: rnd(100, 160),
+                            width: 10,
+                        }
+                    });
+                    score++;
+                }
+                makeBird(); //memanggil ikon burung
+                makePip(); //memanggil obstacle
+                frame++
+                loop();
+            })
+        })();
+    </script>
+
+
+</body>
+
+</html>
